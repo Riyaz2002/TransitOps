@@ -1,22 +1,27 @@
 .vehicle-card{
+    width:100%;
+    display:block;
+    text-align:left;
     background:#fff;
-    border-radius:16px;
+    border-radius:18px;
     overflow:hidden;
     box-shadow:0 8px 20px rgba(0,0,0,.08);
     transition:all .35s ease;
     cursor:pointer;
     border:2px solid transparent;
+    padding:0;
 }
 
-.vehicle-card:hover{
-    transform:translateY(-8px) scale(1.03);
+.vehicle-card:hover,
+.vehicle-card.selected{
+    transform:translateY(-6px);
     border-color:#dc2626;
     box-shadow:0 15px 35px rgba(220,38,38,.25);
 }
 
 .vehicle-image{
     width:100%;
-    height:220px;
+    height:190px;
     object-fit:cover;
 }
 
@@ -59,19 +64,21 @@
 }
 
 .view-btn{
+    display:block;
     width:100%;
     margin-top:18px;
     padding:12px;
-    border:none;
-    border-radius:8px;
+    border-radius:12px;
     background:#dc2626;
     color:white;
-    cursor:pointer;
+    text-align:center;
     font-size:15px;
+    font-weight:700;
     transition:.3s;
 }
 
-.view-btn:hover{
+.vehicle-card:hover .view-btn,
+.vehicle-card.selected .view-btn{
     background:#b91c1c;
 }
 

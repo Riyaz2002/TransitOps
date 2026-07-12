@@ -1,8 +1,12 @@
 import "./VehicleCard.css";
 
-function VehicleCard({ vehicle }) {
+function VehicleCard({ vehicle, isSelected, onSelectVehicle }) {
   return (
-    <div className="vehicle-card">
+    <button
+      type="button"
+      className={isSelected ? "vehicle-card selected" : "vehicle-card"}
+      onClick={() => onSelectVehicle(vehicle)}
+    >
       <img
         src={vehicle.image}
         alt={vehicle.name}
@@ -14,7 +18,11 @@ function VehicleCard({ vehicle }) {
 
         <p>{vehicle.number}</p>
 
+        <p>{vehicle.type}</p>
+
         <p>{vehicle.driver}</p>
+
+        <p>{vehicle.fuel} fuel</p>
 
         <span
           className={`status ${vehicle.status
@@ -24,9 +32,9 @@ function VehicleCard({ vehicle }) {
           {vehicle.status}
         </span>
 
-        <button className="view-btn">View Details</button>
+        <span className="view-btn">Edit Details</span>
       </div>
-    </div>
+    </button>
   );
 }
 
