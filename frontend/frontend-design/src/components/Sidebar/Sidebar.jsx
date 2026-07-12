@@ -12,11 +12,18 @@ const menuItems = [
     path: "/vehicle",
     icon: "V",
   },
+  {
+    label: "Driver",
+    path: "/driver",
+    icon: "DR",
+  },
 ];
 
 function Sidebar({ darkMode, hidden, setHidden }) {
   return (
-    <div className={`${darkMode ? "sidebar dark" : "sidebar"}${hidden ? " hidden" : ""}`}>
+    <div
+      className={`${darkMode ? "sidebar dark" : "sidebar"}${hidden ? " hidden" : ""}`}
+    >
       <button
         type="button"
         className="sidebar-toggle"
