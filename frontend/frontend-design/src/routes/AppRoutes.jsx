@@ -5,7 +5,7 @@ import Dashboard from "../pages/Dashboard/Dashboard";
 import Vehicle from "../pages/Vehicle/Vehicle";
 import Layout from "../layouts/Layout";
 
-function AppRoutes({ darkMode, setDarkMode }) {
+function AppRoutes({ darkMode, setDarkMode, dataMode, setDataMode }) {
   return (
     <Routes>
       <Route
@@ -14,6 +14,8 @@ function AppRoutes({ darkMode, setDarkMode }) {
           <Login
             darkMode={darkMode}
             setDarkMode={setDarkMode}
+            dataMode={dataMode}
+            setDataMode={setDataMode}
           />
         }
       />
@@ -33,7 +35,7 @@ function AppRoutes({ darkMode, setDarkMode }) {
 
         <Route
           path="/vehicle"
-          element={<Vehicle />}
+          element={<Vehicle dataMode={dataMode} />}
         />
       </Route>
     </Routes>
