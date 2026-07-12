@@ -7,7 +7,7 @@
 
 .login-page{
     width:100%;
-    height:100vh;
+    min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -16,7 +16,7 @@
     position:relative;
 }
 
-.dark{
+.login-page.dark{
     background:#1b1b1b;
 }
 
@@ -28,7 +28,7 @@
     box-shadow:0 10px 30px rgba(0,0,0,.2);
 }
 
-.dark .login-card{
+.login-page.dark .login-card{
     background:#2c2c2c;
     color:white;
 }
@@ -44,7 +44,7 @@
     color:gray;
 }
 
-.dark p{
+.login-page.dark .login-card p{
     color:#ddd;
 }
 
@@ -60,7 +60,6 @@
 
 .input-group input,
 .input-group select{
-
     width:100%;
     padding:12px;
     border:1px solid #ccc;
@@ -69,16 +68,14 @@
     font-size:15px;
 }
 
-.dark input,
-.dark select{
-
+.login-page.dark input,
+.login-page.dark select{
     background:#444;
     color:white;
     border:1px solid #555;
 }
 
 .login-options{
-
     display:flex;
     justify-content:space-between;
     align-items:center;
@@ -87,13 +84,11 @@
 }
 
 .login-options a{
-
     color:#dc2626;
     text-decoration:none;
 }
 
 .login-btn{
-
     width:100%;
     padding:14px;
     border:none;
@@ -106,25 +101,67 @@
 }
 
 .login-btn:hover{
-
     background:#b91c1c;
 }
 
-.theme-btn{
-
+.login-theme-toggle{
     position:absolute;
     top:20px;
     right:20px;
-    border:none;
-    background:#dc2626;
-    color:white;
-    padding:10px 18px;
-    border-radius:8px;
-    cursor:pointer;
 }
 
-.dark .theme-btn{
-
-    background:white;
+.theme-toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid #e5e7eb;
+    background:#fff;
     color:#dc2626;
+    padding:6px 12px 6px 6px;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:700;
+    transition:.3s;
+    box-shadow:0 8px 20px rgba(15,23,42,.08);
+}
+
+.theme-toggle-track{
+    width:46px;
+    height:24px;
+    display:flex;
+    align-items:center;
+    padding:3px;
+    border-radius:999px;
+    background:#fecaca;
+    transition:.3s;
+}
+
+.theme-toggle-thumb{
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:#dc2626;
+    transition:.3s;
+    transform:translateX(0);
+}
+
+.theme-toggle-text{
+    min-width:34px;
+    text-align:left;
+}
+
+.login-page.dark .theme-toggle{
+    background:#232323;
+    border-color:#444;
+    color:#fff;
+}
+
+.login-page.dark .theme-toggle-track{
+    background:#444;
+}
+
+.login-page.dark .theme-toggle-thumb{
+    background:#fff;
+    transform:translateX(22px);
 }
