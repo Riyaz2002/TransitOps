@@ -45,8 +45,10 @@ Open `http://127.0.0.1:8000/docs`. The initial roles are `admin`, `dispatcher`, 
 ## Auth flow
 
 1. `POST /api/v1/auth/register` creates a viewer account.
-2. `POST /api/v1/auth/login` returns an access token.
+2. `POST /api/v1/auth/login` returns an access token and sets an HTTP-only refresh-token cookie.
 3. Send `Authorization: Bearer <access_token>` for protected requests.
-4. An admin can grant roles using `PATCH /api/v1/users/{user_id}/role`.
+4. `POST /api/v1/auth/refresh` rotates the refresh cookie and returns a new access token.
+5. `POST /api/v1/auth/logout` revokes the current refresh token and clears its cookie.
+6. An admin can grant roles using `PATCH /api/v1/users/{user_id}/role`.
 
 Bootstrap the first admin through a controlled database operation after registration, such as `UPDATE users SET role = 'admin' WHERE email = 'you@example.com';`. In production, run this through a one-time operational script or migration, never an open public endpoint.
