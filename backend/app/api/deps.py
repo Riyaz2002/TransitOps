@@ -6,7 +6,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.security import ALGORITHM
+from app.core.security import ACCESS_TOKEN_TYPE, ALGORITHM
 from app.db.models import User, UserRole
 from app.db.session import get_db
 
@@ -27,7 +27,7 @@ def get_current_user(
     try:
         payload = jwt.decode(credentials.credentials, get_settings().secret_key, algorithms=[ALGORITHM])
         subject = payload.get("sub")
-        if not subject:
+        if not subject or payload.get("type") != ACCESS_TOKEN_TYPE:
             raise unauthorized
         user_id = int(subject)
     except (jwt.PyJWTError, TypeError, ValueError):

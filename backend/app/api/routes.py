@@ -1,14 +1,40 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import datetime, timezone
+
+import jwt
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_roles
-from app.core.security import create_access_token, hash_password, verify_password
-from app.db.models import User, UserRole
+from app.core.config import get_settings
+from app.core.security import (
+    ALGORITHM,
+    REFRESH_TOKEN_TYPE,
+    create_access_token,
+    create_refresh_token,
+    hash_password,
+    hash_token_id,
+    verify_password,
+)
+from app.db.models import RefreshToken, User, UserRole
 from app.db.session import get_db
 from app.schemas import LoginRequest, RoleUpdate, Token, UserCreate, UserRead
 
 router = APIRouter(prefix="/api/v1")
+REFRESH_TOKEN_COOKIE = "refresh_token"
+
+
+def set_refresh_token_cookie(response: Response, refresh_token: str) -> None:
+    settings = get_settings()
+    response.set_cookie(
+        key=REFRESH_TOKEN_COOKIE,
+        value=refresh_token,
+        max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
+        httponly=True,
+        secure=settings.refresh_token_cookie_secure,
+        samesite="lax",
+        path="/api/v1/auth",
+    )
 
 
 @router.post("/auth/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
@@ -24,7 +50,7 @@ def register_user(payload: UserCreate, db: Session = Depends(get_db)) -> User:
 
 
 @router.post("/auth/login", response_model=Token)
-def login(payload: LoginRequest, db: Session = Depends(get_db)) -> Token:
+def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)) -> Token:
     user = db.scalar(select(User).where(User.email == str(payload.email).lower()))
     if user is None or not user.is_active or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(
@@ -32,7 +58,72 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> Token:
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    refresh_token, token_id, expires_at = create_refresh_token(str(user.id))
+    db.add(RefreshToken(user_id=user.id, token_id_hash=hash_token_id(token_id), expires_at=expires_at))
+    db.commit()
+    set_refresh_token_cookie(response, refresh_token)
     return Token(access_token=create_access_token(str(user.id)))
+
+
+@router.post("/auth/refresh", response_model=Token)
+def refresh_access_token(
+    response: Response,
+    refresh_token: str | None = Cookie(default=None, alias=REFRESH_TOKEN_COOKIE),
+    db: Session = Depends(get_db),
+) -> Token:
+    unauthorized = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+    if refresh_token is None:
+        raise unauthorized
+    try:
+        payload = jwt.decode(refresh_token, get_settings().secret_key, algorithms=[ALGORITHM])
+        subject = payload.get("sub")
+        token_id = payload.get("jti")
+        if not subject or not token_id or payload.get("type") != REFRESH_TOKEN_TYPE:
+            raise unauthorized
+        user_id = int(subject)
+    except (jwt.PyJWTError, TypeError, ValueError):
+        raise unauthorized
+
+    stored_token = db.scalar(
+        select(RefreshToken).where(
+            RefreshToken.user_id == user_id,
+            RefreshToken.token_id_hash == hash_token_id(token_id),
+            RefreshToken.revoked_at.is_(None),
+        )
+    )
+    user = db.get(User, user_id)
+    if stored_token is None or stored_token.expires_at <= datetime.now(timezone.utc) or user is None or not user.is_active:
+        raise unauthorized
+
+    stored_token.revoked_at = datetime.now(timezone.utc)
+    new_refresh_token, new_token_id, expires_at = create_refresh_token(str(user.id))
+    db.add(RefreshToken(user_id=user.id, token_id_hash=hash_token_id(new_token_id), expires_at=expires_at))
+    db.commit()
+    set_refresh_token_cookie(response, new_refresh_token)
+    return Token(access_token=create_access_token(str(user.id)))
+
+
+@router.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    response: Response,
+    refresh_token: str | None = Cookie(default=None, alias=REFRESH_TOKEN_COOKIE),
+    db: Session = Depends(get_db),
+) -> Response:
+    if refresh_token is not None:
+        try:
+            payload = jwt.decode(refresh_token, get_settings().secret_key, algorithms=[ALGORITHM])
+            token_id = payload.get("jti")
+            if payload.get("type") == REFRESH_TOKEN_TYPE and token_id:
+                stored_token = db.scalar(
+                    select(RefreshToken).where(RefreshToken.token_id_hash == hash_token_id(token_id))
+                )
+                if stored_token is not None and stored_token.revoked_at is None:
+                    stored_token.revoked_at = datetime.now(timezone.utc)
+                    db.commit()
+        except jwt.PyJWTError:
+            pass
+    response.delete_cookie(key=REFRESH_TOKEN_COOKIE, path="/api/v1/auth")
+    return response
 
 
 @router.get("/auth/me", response_model=UserRead)
