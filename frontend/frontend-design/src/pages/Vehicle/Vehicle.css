@@ -213,6 +213,100 @@
     background:#fecaca;
 }
 
+.driver-card{
+    border:1px solid #f1f5f9;
+}
+
+.driver-card-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+}
+
+.driver-card-header h3{
+    margin:0 0 4px;
+    font-size:18px;
+    color:#dc2626;
+}
+
+.driver-role{
+    margin:0;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#6b7280;
+}
+
+.driver-status-pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    white-space:nowrap;
+    background:#e0f2fe;
+    color:#0369a1;
+}
+
+.driver-status-pill.available{
+    background:#dcfce7;
+    color:#15803d;
+}
+
+.driver-status-pill.on-duty{
+    background:#fef3c7;
+    color:#b45309;
+}
+
+.driver-status-pill.break{
+    background:#fee2e2;
+    color:#dc2626;
+}
+
+.driver-details-list{
+    display:grid;
+    gap:8px;
+}
+
+.driver-detail-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:8px 10px;
+    border-radius:12px;
+    background:#f8fafc;
+    color:#334155;
+    font-size:13px;
+}
+
+.driver-detail-label{
+    font-weight:800;
+    color:#475569;
+}
+
+.layout.dark .driver-card{
+    border-color:#333;
+}
+
+.layout.dark .driver-role{
+    color:#aaa;
+}
+
+.layout.dark .driver-detail-item{
+    background:#2c2c2c;
+    color:#f5f5f5;
+}
+
+.layout.dark .driver-detail-label{
+    color:#cbd5e1;
+}
+
 @media (max-width:1100px){
     .vehicle-manager{
         grid-template-columns:1fr;
