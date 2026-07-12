@@ -189,6 +189,30 @@
     text-align:left;
 }
 
+.login-success{
+    margin:-4px 0 18px;
+    color:#15803d;
+    font-size:14px;
+    font-weight:700;
+    text-align:left;
+}
+
+.auth-switch-text{
+    margin-top:16px;
+    text-align:center;
+    color:#6b7280;
+    font-size:14px;
+}
+
+.auth-switch-link{
+    border:none;
+    background:none;
+    color:#dc2626;
+    font-weight:800;
+    cursor:pointer;
+    padding:0;
+}
+
 .login-theme-toggle{
     position:absolute;
     top:20px;
