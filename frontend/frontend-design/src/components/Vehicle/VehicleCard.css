@@ -32,6 +32,8 @@
 .vehicle-card-content{
     padding:18px;
     background:#fff;
+    border-radius:18px;
+    margin:10px 12px 12px;
 }
 
 .vehicle-content h3{
@@ -55,12 +57,12 @@
     align-items:center;
     justify-content:space-between;
     gap:10px;
-    padding:6px 0;
-    border-radius:0;
-    background:transparent;
+    padding:8px 10px;
+    border-radius:10px;
+    background:#f8fafc;
     color:#334155;
     font-size:13px;
-    border-bottom:1px solid rgba(148, 163, 184, 0.22);
+    border:1px solid rgba(148, 163, 184, 0.16);
 }
 
 .vehicle-card .driver-detail-item:last-child{
@@ -120,9 +122,14 @@
 }
 
 .layout.dark .vehicle-card{
-    background:#242424;
+    background:#1f1f1f;
     border-color:#333;
     box-shadow:0 10px 24px rgba(0,0,0,.28);
+}
+
+.layout.dark .vehicle-card .vehicle-card-content,
+.layout.dark .vehicle-card .vehicle-content{
+    background:#1f1f1f;
 }
 
 .layout.dark .vehicle-card .driver-detail-item{
@@ -134,6 +141,7 @@
     color:#cbd5e1;
 }
 
-.layout.dark .vehicle-content p{
-    color:#ddd;
+.layout.dark .vehicle-content p,
+.layout.dark .vehicle-card h3{
+    color:#f5f5f5;
 }
