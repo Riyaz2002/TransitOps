@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../Vehicle/Vehicle.css";
 import driversData from "../../data/drivers";
+import {
+  createDriverApi,
+  getDriversApi,
+  updateDriverApi,
+} from "../../api/driverApi";
 
 const emptyDriver = {
   name: "",
@@ -13,13 +18,46 @@ const emptyDriver = {
   image: "",
 };
 
-function Driver() {
+function Driver({ dataMode }) {
   const [drivers, setDrivers] = useState(driversData);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [formData, setFormData] = useState(emptyDriver);
   const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortKey, setSortKey] = useState("name");
 
   const isEditing = Boolean(selectedDriver);
+  const isApiMode = dataMode === "api";
+
+  useEffect(() => {
+    const loadDrivers = async () => {
+      setError("");
+      setShowForm(false);
+      setSelectedDriver(null);
+      setFormData(emptyDriver);
+
+      if (!isApiMode) {
+        setDrivers(driversData);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const response = await getDriversApi();
+        setDrivers(Array.isArray(response) ? response : []);
+      } catch {
+        setDrivers([]);
+        setError("Unable to load API driver records.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDrivers();
+  }, [isApiMode]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -33,41 +71,104 @@ function Driver() {
     setSelectedDriver(null);
     setFormData(emptyDriver);
     setShowForm(true);
+    setError("");
   };
 
   const handleSelect = (driver) => {
     setSelectedDriver(driver);
     setFormData(driver);
     setShowForm(true);
+    setError("");
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
+    setIsSaving(true);
 
-    if (isEditing) {
-      setDrivers((currentDrivers) =>
-        currentDrivers.map((driver) =>
-          driver.id === selectedDriver.id
-            ? { ...formData, id: selectedDriver.id }
-            : driver,
-        ),
-      );
-      return;
+    try {
+      if (isEditing) {
+        if (isApiMode) {
+          const updatedDriver = await updateDriverApi(
+            selectedDriver.id,
+            formData,
+          );
+          setDrivers((currentDrivers) =>
+            currentDrivers.map((driver) =>
+              driver.id === selectedDriver.id ? updatedDriver : driver,
+            ),
+          );
+          setSelectedDriver(updatedDriver);
+          setFormData(updatedDriver);
+          return;
+        }
+
+        setDrivers((currentDrivers) =>
+          currentDrivers.map((driver) =>
+            driver.id === selectedDriver.id
+              ? { ...formData, id: selectedDriver.id }
+              : driver,
+          ),
+        );
+        return;
+      }
+
+      const newDriverPayload = {
+        ...formData,
+        image:
+          formData.image ||
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+      };
+
+      const newDriver = isApiMode
+        ? await createDriverApi(newDriverPayload)
+        : {
+            ...newDriverPayload,
+            id: Date.now(),
+          };
+
+      setDrivers((currentDrivers) => [newDriver, ...currentDrivers]);
+      setSelectedDriver(newDriver);
+      setFormData(newDriver);
+      setShowForm(true);
+    } catch {
+      setError("Unable to save driver record.");
+    } finally {
+      setIsSaving(false);
     }
-
-    const newDriver = {
-      ...formData,
-      id: Date.now(),
-      image:
-        formData.image ||
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-    };
-
-    setDrivers((currentDrivers) => [newDriver, ...currentDrivers]);
-    setSelectedDriver(newDriver);
-    setFormData(newDriver);
-    setShowForm(true);
   };
+
+  const filteredDrivers = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    const matches = drivers.filter((driver) => {
+      if (!query) {
+        return true;
+      }
+
+      return [
+        driver.name,
+        driver.license,
+        driver.phone,
+        driver.vehicle,
+        driver.status,
+        driver.shift,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+    });
+
+    return [...matches].sort((a, b) => {
+      if (sortKey === "status") {
+        return a.status.localeCompare(b.status);
+      }
+      if (sortKey === "shift") {
+        return a.shift.localeCompare(b.shift);
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [searchTerm, sortKey, drivers]);
 
   const handleDelete = () => {
     if (!selectedDriver) {
@@ -85,7 +186,32 @@ function Driver() {
   return (
     <div className="vehicle-page">
       <div className="vehicle-actions">
-        <p>{drivers.length} drivers registered</p>
+        <div className="vehicle-toolbar">
+          <p>
+            {isLoading
+              ? "Loading drivers..."
+              : `${filteredDrivers.length} drivers registered`}
+            <span className="vehicle-mode-label">
+              {isApiMode ? "API Mode" : "Dummy Mode"}
+            </span>
+          </p>
+          <div className="vehicle-filter-bar">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search drivers"
+            />
+            <select
+              value={sortKey}
+              onChange={(event) => setSortKey(event.target.value)}
+            >
+              <option value="name">Sort by name</option>
+              <option value="status">Sort by status</option>
+              <option value="shift">Sort by shift</option>
+            </select>
+          </div>
+        </div>
         <button
           type="button"
           className="create-vehicle-btn"
@@ -95,9 +221,11 @@ function Driver() {
         </button>
       </div>
 
+      {error && <p className="vehicle-error">{error}</p>}
+
       <div className="vehicle-manager">
         <div className="vehicle-grid">
-          {drivers.map((driver) => (
+          {filteredDrivers.map((driver) => (
             <article
               key={driver.id}
               className={`vehicle-card driver-card${selectedDriver?.id === driver.id ? " active" : ""}`}
@@ -260,8 +388,16 @@ function Driver() {
             </label>
 
             <div className="vehicle-form-buttons">
-              <button type="submit" className="save-vehicle-btn">
-                {isEditing ? "Save Changes" : "Create Record"}
+              <button
+                type="submit"
+                className="save-vehicle-btn"
+                disabled={isSaving}
+              >
+                {isSaving
+                  ? "Saving..."
+                  : isEditing
+                    ? "Save Changes"
+                    : "Create Record"}
               </button>
 
               {isEditing && (

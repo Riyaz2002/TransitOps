@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 
 const menuItems = [
@@ -17,9 +17,22 @@ const menuItems = [
     path: "/driver",
     icon: "DR",
   },
+  {
+    label: "Trip",
+    path: "/trip",
+    icon: "TR",
+  },
 ];
 
 function Sidebar({ darkMode, hidden, setHidden }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("data_mode");
+    navigate("/");
+  };
+
   return (
     <div
       className={`${darkMode ? "sidebar dark" : "sidebar"}${hidden ? " hidden" : ""}`}
@@ -53,6 +66,10 @@ function Sidebar({ darkMode, hidden, setHidden }) {
           </NavLink>
         ))}
       </nav>
+
+      <button type="button" className="logout-btn" onClick={handleLogout}>
+        Logout
+      </button>
     </div>
   );
 }

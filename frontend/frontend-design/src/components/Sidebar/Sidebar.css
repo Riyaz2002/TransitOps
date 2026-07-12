@@ -99,6 +99,37 @@
     gap:14px;
 }
 
+.logout-btn{
+    margin-top:18px;
+    width:100%;
+    max-width:100%;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color:#dc2626;
+    padding:12px 14px;
+    font-size:14px;
+    font-weight:800;
+    cursor:pointer;
+    transition:transform .25s ease, box-shadow .25s ease, background .25s ease;
+    box-shadow:0 8px 16px rgba(220,38,38,.12);
+    box-sizing:border-box;
+    display:block;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.logout-btn:hover{
+    background:linear-gradient(135deg, #fecaca 0%, #fda4af 100%);
+    transform:translateY(-2px) scale(1.01);
+    box-shadow:0 10px 20px rgba(220,38,38,.2);
+}
+
+.logout-btn:active{
+    transform:translateY(0) scale(.99);
+}
+
 .menu-item{
     min-height:74px;
     position:relative;
@@ -224,4 +255,13 @@
 .sidebar.dark .menu-item.active .menu-icon{
     background:white;
     color:#dc2626;
+}
+
+.sidebar.dark .logout-btn{
+    background:#333;
+    color:#fff;
+}
+
+.sidebar.dark .logout-btn:hover{
+    background:#444;
 }
