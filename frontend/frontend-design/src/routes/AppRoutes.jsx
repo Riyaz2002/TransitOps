@@ -4,6 +4,7 @@ import Login from "../pages/Login/Login";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import Vehicle from "../pages/Vehicle/Vehicle";
 import Driver from "../pages/Driver/Driver";
+import Trip from "../pages/Trip/Trip";
 import Layout from "../layouts/Layout";
 
 function AppRoutes({ darkMode, setDarkMode, dataMode, setDataMode }) {
@@ -26,7 +27,9 @@ function AppRoutes({ darkMode, setDarkMode, dataMode, setDataMode }) {
 
         <Route path="/vehicle" element={<Vehicle dataMode={dataMode} />} />
 
-        <Route path="/driver" element={<Driver />} />
+        <Route path="/driver" element={<Driver dataMode={dataMode} />} />
+
+        <Route path="/trip" element={<Trip dataMode={dataMode} />} />
       </Route>
     </Routes>
   );

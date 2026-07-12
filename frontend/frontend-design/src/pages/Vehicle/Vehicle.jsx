@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./Vehicle.css";
 import VehicleGrid from "../../components/Vehicle/VehicleGrid";
 import vehicleData from "../../data/vehicles";
@@ -28,6 +28,8 @@ function Vehicle({ dataMode }) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortKey, setSortKey] = useState("name");
 
   const isEditing = Boolean(selectedVehicle);
   const isApiMode = dataMode === "api";
@@ -48,7 +50,9 @@ function Vehicle({ dataMode }) {
 
       try {
         const response = await getVehiclesApi();
-        const apiVehicles = Array.isArray(response) ? response : response.results || [];
+        const apiVehicles = Array.isArray(response)
+          ? response
+          : response.results || [];
         setVehicles(apiVehicles);
       } catch {
         setVehicles([]);
@@ -92,12 +96,15 @@ function Vehicle({ dataMode }) {
     try {
       if (isEditing) {
         if (isApiMode) {
-          const updatedVehicle = await updateVehicleApi(selectedVehicle.id, formData);
+          const updatedVehicle = await updateVehicleApi(
+            selectedVehicle.id,
+            formData,
+          );
 
           setVehicles((currentVehicles) =>
             currentVehicles.map((vehicle) =>
-              vehicle.id === selectedVehicle.id ? updatedVehicle : vehicle
-            )
+              vehicle.id === selectedVehicle.id ? updatedVehicle : vehicle,
+            ),
           );
           setSelectedVehicle(updatedVehicle);
           setFormData(updatedVehicle);
@@ -108,8 +115,8 @@ function Vehicle({ dataMode }) {
           currentVehicles.map((vehicle) =>
             vehicle.id === selectedVehicle.id
               ? { ...formData, id: selectedVehicle.id }
-              : vehicle
-          )
+              : vehicle,
+          ),
         );
         return;
       }
@@ -139,6 +146,37 @@ function Vehicle({ dataMode }) {
     }
   };
 
+  const filteredVehicles = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    const matches = vehicles.filter((vehicle) => {
+      if (!query) {
+        return true;
+      }
+
+      return [
+        vehicle.name,
+        vehicle.number,
+        vehicle.driver,
+        vehicle.type,
+        vehicle.status,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+    });
+
+    return [...matches].sort((a, b) => {
+      if (sortKey === "status") {
+        return a.status.localeCompare(b.status);
+      }
+      if (sortKey === "driver") {
+        return a.driver.localeCompare(b.driver);
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [searchTerm, sortKey, vehicles]);
+
   const handleDelete = async () => {
     if (!selectedVehicle) {
       return;
@@ -153,7 +191,7 @@ function Vehicle({ dataMode }) {
       }
 
       setVehicles((currentVehicles) =>
-        currentVehicles.filter((vehicle) => vehicle.id !== selectedVehicle.id)
+        currentVehicles.filter((vehicle) => vehicle.id !== selectedVehicle.id),
       );
       setSelectedVehicle(null);
       setFormData(emptyVehicle);
@@ -168,12 +206,32 @@ function Vehicle({ dataMode }) {
   return (
     <div className="vehicle-page">
       <div className="vehicle-actions">
-        <p>
-          {isLoading ? "Loading records..." : `${vehicles.length} records`}
-          <span className="vehicle-mode-label">
-            {isApiMode ? "API Mode" : "Dummy Mode"}
-          </span>
-        </p>
+        <div className="vehicle-toolbar">
+          <p>
+            {isLoading
+              ? "Loading records..."
+              : `${filteredVehicles.length} records`}
+            <span className="vehicle-mode-label">
+              {isApiMode ? "API Mode" : "Dummy Mode"}
+            </span>
+          </p>
+          <div className="vehicle-filter-bar">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search vehicles"
+            />
+            <select
+              value={sortKey}
+              onChange={(event) => setSortKey(event.target.value)}
+            >
+              <option value="name">Sort by name</option>
+              <option value="status">Sort by status</option>
+              <option value="driver">Sort by driver</option>
+            </select>
+          </div>
+        </div>
         <button
           type="button"
           className="create-vehicle-btn"
@@ -187,16 +245,13 @@ function Vehicle({ dataMode }) {
 
       <div className="vehicle-manager">
         <VehicleGrid
-          vehicles={vehicles}
+          vehicles={filteredVehicles}
           selectedVehicleId={selectedVehicle?.id}
           onSelectVehicle={handleSelect}
         />
 
         {showForm && (
-          <form
-            className="vehicle-form"
-            onSubmit={handleSubmit}
-          >
+          <form className="vehicle-form" onSubmit={handleSubmit}>
             <div className="vehicle-form-header">
               <div>
                 <h2>{isEditing ? "Edit Vehicle" : "Create Vehicle"}</h2>
