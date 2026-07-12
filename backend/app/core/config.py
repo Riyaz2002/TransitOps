@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     database_url: PostgresDsn
     secret_key: str = Field(min_length=32)
     access_token_expire_minutes: int = Field(default=30, gt=0, le=1440)
+    refresh_token_expire_days: int = Field(default=7, gt=0, le=30)
+    refresh_token_cookie_secure: bool = False
     db_ssl_required: bool = False
     environment: str = "development"
 
