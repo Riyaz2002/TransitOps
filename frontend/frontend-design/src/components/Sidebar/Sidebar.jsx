@@ -1,18 +1,51 @@
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
-function Sidebar() {
+const menuItems = [
+  {
+    label: "Dashboard",
+    path: "/dashboard",
+    icon: "D",
+  },
+  {
+    label: "Vehicle",
+    path: "/vehicle",
+    icon: "V",
+  },
+];
+
+function Sidebar({ darkMode, hidden, setHidden }) {
   return (
-    <div className="sidebar">
-      <h2>Fleet System</h2>
+    <div className={`${darkMode ? "sidebar dark" : "sidebar"}${hidden ? " hidden" : ""}`}>
+      <button
+        type="button"
+        className="sidebar-toggle"
+        aria-label={hidden ? "Show menu" : "Hide menu"}
+        aria-expanded={!hidden}
+        onClick={() => setHidden(!hidden)}
+      >
+        {hidden ? ">" : "<"}
+      </button>
 
-      <NavLink to="/dashboard" className="menu-item">
-        📊 Dashboard
-      </NavLink>
+      <div className="sidebar-header">
+        <h2>Fleet Registry</h2>
+        <p>Menu</p>
+      </div>
 
-      <NavLink to="/vehicle" className="menu-item">
-        🚗 Vehicle
-      </NavLink>
+      <nav className="menu-grid">
+        {menuItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `menu-item${isActive ? " active" : ""}`
+            }
+          >
+            <span className="menu-icon">{item.icon}</span>
+            <span className="menu-label">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }

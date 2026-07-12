@@ -1,11 +1,10 @@
-import vehicles from "../../data/vehicles";
+import "./Vehicle.css";
 import VehicleGrid from "../../components/Vehicle/VehicleGrid";
+import vehicles from "../../data/vehicles";
 
 function Vehicle() {
   return (
-    <div>
-      <h1>Vehicle Management</h1>
-
+    <div className="vehicle-page">
       <VehicleGrid vehicles={vehicles} />
     </div>
   );
