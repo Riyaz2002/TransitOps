@@ -20,6 +20,7 @@ from app.db.models import RefreshToken, User, UserRole
 from app.db.session import get_db
 from app.models.vehicle import Vehicle, VehicleStatus
 from app.models.driver import Driver, DriverStatus
+from app.routers.trip import router as trip_router
 from app.schemas import (
     LoginRequest,
     RoleUpdate,
@@ -36,6 +37,7 @@ from app.schemas import (
 
 router = APIRouter(prefix="/api/v1")
 REFRESH_TOKEN_COOKIE = "refresh_token"
+router.include_router(trip_router, prefix="/api/v1")
 
 
 def set_refresh_token_cookie(response: Response, refresh_token: str) -> None:
