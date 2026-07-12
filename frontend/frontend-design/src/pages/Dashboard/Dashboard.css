@@ -1,0 +1,12 @@
+.dashboard-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f5f5;
+}
+
+.dashboard-page h1 {
+    font-size: 36px;
+    color: #dc2626;
+}
