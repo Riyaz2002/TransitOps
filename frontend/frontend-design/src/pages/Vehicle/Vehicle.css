@@ -1,8 +1,13 @@
 .vehicle-page{
     background:transparent;
     min-height:100%;
-    padding:10px;
+    padding:16px;
+    border-radius:24px;
     transition:.3s;
+}
+
+.layout.dark .vehicle-page{
+    background:transparent;
 }
 
 .vehicle-actions{
@@ -11,6 +16,33 @@
     justify-content:space-between;
     gap:16px;
     margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.vehicle-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex:1;
+    flex-wrap:wrap;
+}
+
+.vehicle-filter-bar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.vehicle-filter-bar input,
+.vehicle-filter-bar select{
+    border:1px solid #d1d5db;
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:13px;
+    min-width:160px;
+    background:#fff;
 }
 
 .vehicle-actions p{
@@ -45,6 +77,7 @@
     grid-template-columns:minmax(0, 1fr) auto;
     gap:24px;
     align-items:start;
+    padding:6px 2px;
 }
 
 .vehicle-grid{
@@ -166,7 +199,9 @@
 }
 
 .layout.dark .vehicle-form input,
-.layout.dark .vehicle-form select{
+.layout.dark .vehicle-form select,
+.layout.dark .vehicle-filter-bar input,
+.layout.dark .vehicle-filter-bar select{
     background:#1b1b1b;
     border-color:#444;
     color:#fff;
