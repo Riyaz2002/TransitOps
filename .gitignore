@@ -1,0 +1,4 @@
+TransiOPs/
+__pycache__/
+*.pyc
+.env
