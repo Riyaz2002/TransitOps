@@ -33,10 +33,13 @@ def create_access_token(subject: str) -> str:
     return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
 
 
-def create_refresh_token(subject: str) -> tuple[str, str, datetime]:
-    """Create a refresh JWT and the identifier stored server-side for revocation."""
+def create_refresh_token(
+    subject: str, expires_at: datetime | None = None
+) -> tuple[str, str, datetime]:
+    """Create a refresh JWT that cannot outlive its original session deadline."""
     settings = get_settings()
-    expires_at = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
+    if expires_at is None:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
     token_id = str(uuid4())
     payload = {
         "sub": subject,
