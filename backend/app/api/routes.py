@@ -24,12 +24,13 @@ router = APIRouter(prefix="/api/v1")
 REFRESH_TOKEN_COOKIE = "refresh_token"
 
 
-def set_refresh_token_cookie(response: Response, refresh_token: str) -> None:
+def set_refresh_token_cookie(response: Response, refresh_token: str, expires_at: datetime) -> None:
     settings = get_settings()
+    remaining_seconds = max(0, int((expires_at - datetime.now(timezone.utc)).total_seconds()))
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE,
         value=refresh_token,
-        max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
+        max_age=remaining_seconds,
         httponly=True,
         secure=settings.refresh_token_cookie_secure,
         samesite="lax",
@@ -61,7 +62,7 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
     refresh_token, token_id, expires_at = create_refresh_token(str(user.id))
     db.add(RefreshToken(user_id=user.id, token_id_hash=hash_token_id(token_id), expires_at=expires_at))
     db.commit()
-    set_refresh_token_cookie(response, refresh_token)
+    set_refresh_token_cookie(response, refresh_token, expires_at)
     return Token(access_token=create_access_token(str(user.id)))
 
 
@@ -96,10 +97,13 @@ def refresh_access_token(
         raise unauthorized
 
     stored_token.revoked_at = datetime.now(timezone.utc)
-    new_refresh_token, new_token_id, expires_at = create_refresh_token(str(user.id))
+    # Rotate the token identifier but retain the original login session deadline.
+    new_refresh_token, new_token_id, expires_at = create_refresh_token(
+        str(user.id), expires_at=stored_token.expires_at
+    )
     db.add(RefreshToken(user_id=user.id, token_id_hash=hash_token_id(new_token_id), expires_at=expires_at))
     db.commit()
-    set_refresh_token_cookie(response, new_refresh_token)
+    set_refresh_token_cookie(response, new_refresh_token, expires_at)
     return Token(access_token=create_access_token(str(user.id)))
 
 
